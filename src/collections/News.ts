@@ -1,6 +1,6 @@
 import { isLoggedIn } from '../access/isLoggedIn';
 
-export const News = {
+export const News: any = {
     slug: 'news',
     admin: {
         useAsTitle: 'title',
