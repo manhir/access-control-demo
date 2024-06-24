@@ -3,27 +3,51 @@ import path from 'path';
 import { Users } from './collections/Users';
 import { Sites } from './collections/Sites';
 import { Media } from './collections/Media';
-import { ContactRequests } from './collections/ContactRequests';
-import { Pages } from './collections/Pages';
-import { seed } from './seed';
 import { News } from './collections/News';
+
+import { mongooseAdapter } from '@payloadcms/db-mongodb'
+import { webpackBundler } from '@payloadcms/bundler-webpack'
+import { HTMLConverterFeature, HeadingFeature, lexicalEditor } from '@payloadcms/richtext-lexical';
 
 export default buildConfig({
     admin: {
         user: Users.slug,
+        bundler: webpackBundler(),
     },
+    editor: lexicalEditor({
+        features({ defaultFeatures }) {
+            return [
+                ...defaultFeatures
+                    .filter((feature) => [
+                        'link',
+                        'paragraph',
+                        // 'heading',
+                        'upload',
+                        'bold',
+                        'italic',
+                        'underline',
+                        'align',
+                    ].includes(feature.key)),
+                HeadingFeature({
+                    enabledHeadingSizes: ['h1', 'h2', 'h3'],
+                }),
+                HTMLConverterFeature({}),
+            ]
+        },
+    }),
     collections: [
-        ContactRequests,
-        Media,
-        Pages,
-        Sites,
         Users,
         News,
+        Media,
+        Sites,
     ],
-    onInit: async (payload) => {
-        // If the `env` var `PAYLOAD_SEED` is set, seed the db
-        if (process.env.PAYLOAD_SEED) {
-            await seed(payload);
-        }
-    }
-});
+    typescript: {
+        outputFile: path.resolve(__dirname, 'payload-types.ts'),
+    },
+    graphQL: {
+        schemaOutputFile: path.resolve(__dirname, 'generated-schema.graphql'),
+    },
+    db: mongooseAdapter({
+        url: process.env.DATABASE_URI,
+    }),
+})
