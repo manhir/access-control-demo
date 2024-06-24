@@ -20,9 +20,6 @@ export default buildConfig({
         Users,
         News,
     ],
-    typescript: {
-        outputFile: path.resolve(__dirname, 'payload-types.ts'),
-    },
     onInit: async (payload) => {
         // If the `env` var `PAYLOAD_SEED` is set, seed the db
         if (process.env.PAYLOAD_SEED) {
